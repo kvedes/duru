@@ -1,5 +1,5 @@
 pub mod node;
-use crate::node::Node;
+use crate::node::{DuruList, Node, SortOrder};
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -24,5 +24,10 @@ fn main() {
     };
 
     root.recurse();
-    println!("{:?}", root);
+    let file_list = root.file_list();
+
+    let mut duru = DuruList::new(file_list.unwrap());
+    duru.sort_by_size(SortOrder::Descending);
+    //println!("{:?}", file_list);
+    println!("{}", duru);
 }
