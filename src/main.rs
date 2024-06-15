@@ -10,6 +10,9 @@ struct Args {
     /// Name of the person to greet
     #[arg(short, long)]
     path: String,
+
+    #[arg(long, default_value_t = 20)]
+    head: u32,
 }
 fn main() {
     let args = Args::parse();

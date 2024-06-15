@@ -97,8 +97,15 @@ impl Node {
                         children: None,
                     }
                 } else {
+                    let name = match node.file_name().to_str() {
+                        Some(n) => n.to_string(),
+                        None => {
+                            print!("{:?}", node.file_name().to_str());
+                            String::from("UNDEFINED")
+                        }
+                    };
                     Node::File {
-                        name: node.file_name().to_str().unwrap().to_string(),
+                        name: name,
                         path: path.clone(),
                         size: metadata.size(),
                     }
@@ -204,7 +211,7 @@ fn file_list_recurse(
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DuruFile {
     name: String,
     path: String,
@@ -253,8 +260,58 @@ impl DuruList {
             }
         }
     }
+
+    // pub fn print(&self, head: u32) {
+    //     let max_chars = self
+    //         .files
+    //         .iter()
+    //         .map(|f| f.name.chars().count())
+    //         .max()
+    //         .unwrap();
+
+    //     for file in self.files.iter() {
+    //         let indent = std::iter::repeat(" ")
+    //             .take(max_chars - file.name.chars().count() + 1)
+    //             .collect::<String>();
+    //         write!(f, "{}{}{}\n", file.name, indent, file.size)?
+    //     }
+    // }
+
+    // COntinue work on this
+    fn to_indented_string(&self) -> Vec<IndentedString> {
+        let max_chars = self
+            .files
+            .iter()
+            .map(|f| f.name.chars().count())
+            .max()
+            .unwrap();
+
+        self.files
+            .iter()
+            .map(|f| IndentedString::new(f.name.clone(), max_chars - f.name.chars().count() + 1))
+            .collect::<Vec<IndentedString>>()
+    }
+
+    pub fn head(&self, n: usize) -> DuruList {
+        DuruList::new(self.files[0..n].to_vec())
+    }
 }
 
+struct IndentedString {
+    value: String,
+    indent: usize,
+}
+
+impl IndentedString {
+    pub fn new(value: String, indent: usize) -> Self {
+        IndentedString { value, indent }
+    }
+
+    pub fn to_string(&self) -> String {
+        let indent = std::iter::repeat(" ").take(self.indent).collect::<String>();
+        self.value.clone() + &indent
+    }
+}
 impl fmt::Display for DuruList {
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
