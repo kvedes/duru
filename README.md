@@ -1,6 +1,6 @@
 # DURU
 
-Duru (du rust) is a simple tool for identifying large files. It allows you to get recursively search for the largest files in your filesystem.
+Duru (du rust) is a simple tool for identifying large files. It allows you to recursively search for the largest files in your filesystem.
 
 ## Example
 
