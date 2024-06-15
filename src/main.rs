@@ -11,6 +11,9 @@ struct Args {
 
     #[arg(long, default_value_t = 20)]
     head: usize,
+
+    #[arg(short, long, action)]
+    full: bool,
 }
 fn main() {
     let args = Args::parse();
@@ -30,5 +33,9 @@ fn main() {
     duru.sort_by_size(SortOrder::Descending);
     let duru_list = duru.head(args.head);
 
-    println!("{}", duru_list);
+    if args.full {
+        duru_list.print_path_size();
+    } else {
+        duru_list.print_name_size();
+    }
 }

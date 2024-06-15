@@ -2,6 +2,7 @@ use human_bytes::human_bytes;
 use std::fmt;
 use std::fs::{self, DirEntry};
 use std::os::unix::fs::MetadataExt;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -278,22 +279,55 @@ impl DuruList {
         }
     }
 
-    fn to_indented_string(&self) -> Vec<IndentedString> {
-        let max_chars = self
-            .files
-            .iter()
-            .map(|f| f.name.chars().count())
-            .max()
-            .unwrap();
+    fn name_indented_string(&self) -> Vec<IndentedString> {
+        DuruList::to_indented_string(self.files.iter().map(|f| f.name.clone()).collect())
+    }
 
-        self.files
+    fn path_indented_string(&self) -> Vec<IndentedString> {
+        DuruList::to_indented_string(
+            self.files
+                .iter()
+                .map(|f| {
+                    Path::new(&f.path.clone())
+                        .join(f.name.clone())
+                        .to_str()
+                        .unwrap()
+                        .to_string()
+                })
+                .collect(),
+        )
+    }
+
+    fn to_indented_string(strings: Vec<String>) -> Vec<IndentedString> {
+        let max_chars = strings.iter().map(|val| val.chars().count()).max().unwrap();
+        strings
             .iter()
-            .map(|f| IndentedString::new(f.name.clone(), max_chars - f.name.chars().count() + 1))
+            .map(|val| IndentedString::new(val.clone(), max_chars - val.chars().count() + 1))
             .collect::<Vec<IndentedString>>()
     }
 
     pub fn head(&self, n: usize) -> DuruList {
         DuruList::new(self.files[0..n].to_vec())
+    }
+
+    pub fn print_name_size(&self) {
+        for (istr, file) in self
+            .name_indented_string()
+            .into_iter()
+            .zip(self.files.iter())
+        {
+            println!("{}{}", istr.to_string(), human_bytes(file.size as f64));
+        }
+    }
+
+    pub fn print_path_size(&self) {
+        for (istr, file) in self
+            .path_indented_string()
+            .into_iter()
+            .zip(self.files.iter())
+        {
+            println!("{}{}", istr.to_string(), human_bytes(file.size as f64));
+        }
     }
 }
 
@@ -321,7 +355,11 @@ impl fmt::Display for DuruList {
         // operation succeeded or failed. Note that `write!` uses syntax which
         // is very similar to `println!`.
 
-        for (istr, file) in self.to_indented_string().into_iter().zip(self.files.iter()) {
+        for (istr, file) in self
+            .name_indented_string()
+            .into_iter()
+            .zip(self.files.iter())
+        {
             write!(f, "{}{}\n", istr.to_string(), human_bytes(file.size as f64))?;
         }
         Ok(())
