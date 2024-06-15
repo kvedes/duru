@@ -3,11 +3,9 @@ use crate::node::{DuruList, Node, SortOrder};
 use clap::Parser;
 use std::path::PathBuf;
 
-/// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
     #[arg(short, long)]
     path: String,
 
@@ -20,7 +18,6 @@ fn main() {
     let mut path = PathBuf::new();
     path.push(args.path);
 
-    //let root_nodes = create_nodes(path);
     let mut root = Node::Root {
         children: None,
         path: path.clone(),
@@ -32,6 +29,6 @@ fn main() {
     let mut duru = DuruList::new(file_list.unwrap());
     duru.sort_by_size(SortOrder::Descending);
     let duru_list = duru.head(args.head);
-    //println!("{:?}", file_list);
+
     println!("{}", duru_list);
 }
