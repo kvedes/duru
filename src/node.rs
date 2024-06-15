@@ -48,7 +48,7 @@ impl Node {
             } => {
                 if children.is_none() {
                     let new_path = path.join(name);
-                    *children = Some(Node::create_nodes(&new_path));
+                    *children = Node::create_nodes(&new_path);
                 } else {
                     ()
                 }
@@ -58,7 +58,7 @@ impl Node {
             }
             Node::Root { children, path } => {
                 if children.is_none() {
-                    *children = Some(Node::create_nodes(path));
+                    *children = Node::create_nodes(path);
                 } else {
                     ()
                 }
@@ -70,16 +70,23 @@ impl Node {
         }
     }
 
-    pub fn create_nodes(path: &PathBuf) -> Vec<Node> {
-        Node::to_nodes(Node::list_dir(path.clone().to_str().unwrap()), path)
+    pub fn create_nodes(path: &PathBuf) -> Option<Vec<Node>> {
+        match Node::list_dir(path.clone().to_str().unwrap()) {
+            Some(entries) => Some(Node::to_nodes(entries, path)),
+            None => None,
+        }
     }
 
-    pub fn list_dir(path: &str) -> Vec<DirEntry> {
-        let paths = fs::read_dir(path).unwrap();
-        paths
-            .into_iter()
-            .map(|e| e.unwrap())
-            .collect::<Vec<DirEntry>>()
+    pub fn list_dir(path: &str) -> Option<Vec<DirEntry>> {
+        match fs::read_dir(path) {
+            Ok(paths) => Some(
+                paths
+                    .into_iter()
+                    .map(|e| e.unwrap())
+                    .collect::<Vec<DirEntry>>(),
+            ),
+            Err(e) => None,
+        }
     }
 
     pub fn to_nodes(entries: Vec<DirEntry>, path: &PathBuf) -> Vec<Node> {
