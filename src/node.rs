@@ -1,12 +1,11 @@
-use std::borrow::BorrowMut;
+use human_bytes::human_bytes;
 use std::fmt;
 use std::fs::{self, DirEntry};
-use std::io;
 use std::os::unix::fs::MetadataExt;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
+
 #[derive(Debug)]
 pub enum DuruError {
     NotADir,
@@ -312,6 +311,7 @@ impl IndentedString {
         self.value.clone() + &indent
     }
 }
+
 impl fmt::Display for DuruList {
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -319,18 +319,9 @@ impl fmt::Display for DuruList {
         // stream: `f`. Returns `fmt::Result` which indicates whether the
         // operation succeeded or failed. Note that `write!` uses syntax which
         // is very similar to `println!`.
-        let max_chars = self
-            .files
-            .iter()
-            .map(|f| f.name.chars().count())
-            .max()
-            .unwrap();
 
-        for file in self.files.iter() {
-            let indent = std::iter::repeat(" ")
-                .take(max_chars - file.name.chars().count() + 1)
-                .collect::<String>();
-            write!(f, "{}{}{}\n", file.name, indent, file.size)?
+        for (istr, file) in self.to_indented_string().into_iter().zip(self.files.iter()) {
+            write!(f, "{}{}\n", istr.to_string(), human_bytes(file.size as f64))?;
         }
         Ok(())
     }

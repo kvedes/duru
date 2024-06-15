@@ -12,7 +12,7 @@ struct Args {
     path: String,
 
     #[arg(long, default_value_t = 20)]
-    head: u32,
+    head: usize,
 }
 fn main() {
     let args = Args::parse();
@@ -31,6 +31,7 @@ fn main() {
 
     let mut duru = DuruList::new(file_list.unwrap());
     duru.sort_by_size(SortOrder::Descending);
+    let duru_list = duru.head(args.head);
     //println!("{:?}", file_list);
-    println!("{}", duru);
+    println!("{}", duru_list);
 }

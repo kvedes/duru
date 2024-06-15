@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
 filesize = "0.2.0"
+human_bytes = "0.4.3"
