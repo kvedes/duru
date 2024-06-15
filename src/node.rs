@@ -43,7 +43,7 @@ impl Node {
             Node::Dir {
                 name,
                 path,
-                size,
+                size: _,
                 children,
             } => {
                 if children.is_none() {
@@ -52,9 +52,14 @@ impl Node {
                 } else {
                     ()
                 }
-                for child in children.as_mut().unwrap().iter_mut() {
-                    child.recurse();
-                }
+                match children {
+                    Some(c) => {
+                        for child in c.iter_mut() {
+                            child.recurse();
+                        }
+                    }
+                    None => return (),
+                };
             }
             Node::Root { children, path } => {
                 if children.is_none() {
@@ -62,11 +67,20 @@ impl Node {
                 } else {
                     ()
                 }
-                for child in children.as_mut().unwrap().iter_mut() {
-                    child.recurse();
-                }
+                match children {
+                    Some(c) => {
+                        for child in c.iter_mut() {
+                            child.recurse();
+                        }
+                    }
+                    None => return (),
+                };
             }
-            Node::File { name, path, size } => (),
+            Node::File {
+                name: _,
+                path: _,
+                size: _,
+            } => (),
         }
     }
 
@@ -85,7 +99,7 @@ impl Node {
                     .map(|e| e.unwrap())
                     .collect::<Vec<DirEntry>>(),
             ),
-            Err(e) => None,
+            Err(_e) => None,
         }
     }
 
