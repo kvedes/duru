@@ -85,22 +85,15 @@ impl Node {
     }
 
     pub fn create_nodes(path: &PathBuf) -> Option<Vec<Node>> {
-        match Node::list_dir(path.clone().to_str().unwrap()) {
-            Some(entries) => Some(Node::to_nodes(entries, path)),
-            None => None,
-        }
+        Node::list_dir(path.clone().to_str().unwrap()).map(|entries| Node::to_nodes(entries, path))
     }
 
     pub fn list_dir(path: &str) -> Option<Vec<DirEntry>> {
-        match fs::read_dir(path) {
-            Ok(paths) => Some(
-                paths
-                    .into_iter()
-                    .map(|e| e.unwrap())
-                    .collect::<Vec<DirEntry>>(),
-            ),
-            Err(_e) => None,
-        }
+        fs::read_dir(path).ok().map(|rd| {
+            rd.into_iter()
+                .map(|e| e.unwrap())
+                .collect::<Vec<DirEntry>>()
+        })
     }
 
     pub fn to_nodes(entries: Vec<DirEntry>, path: &PathBuf) -> Vec<Node> {
@@ -138,19 +131,23 @@ impl Node {
         match self {
             Node::Root { children, .. } => {
                 if children.is_some() {
-                    let mut files = Arc::new(Mutex::new(Vec::new()));
+                    let files = Arc::new(Mutex::new(Vec::new()));
                     file_list_recurse(self, Arc::clone(&files))
                 } else {
                     Err(DuruError::NoChildren)
                 }
             }
             Node::Dir {
-                name,
-                path,
-                size,
-                children,
+                name: _,
+                path: _,
+                size: _,
+                children: _,
             } => Err(DuruError::NotRoot),
-            Node::File { name, path, size } => Err(DuruError::NotRoot),
+            Node::File {
+                name: _,
+                path: _,
+                size: _,
+            } => Err(DuruError::NotRoot),
         }
     }
 
@@ -158,12 +155,12 @@ impl Node {
         let flm = self.file_list_mutex();
         match flm {
             Ok(v) => Ok(Arc::try_unwrap(v)
-                .map_err(|err| {
+                .map_err(|_err| {
                     Err::<Arc<Mutex<Vec<DuruFile>>>, DuruError>(DuruError::FailedListExtraction)
                 })
                 .unwrap()
                 .into_inner()
-                .map_err(|err| Err::<Vec<DuruFile>, DuruError>(DuruError::FailedListExtraction))
+                .map_err(|_err| Err::<Vec<DuruFile>, DuruError>(DuruError::FailedListExtraction))
                 .unwrap()),
             Err(e) => Err(e),
         }
@@ -175,7 +172,7 @@ fn file_list_recurse(
     file_list: Arc<Mutex<Vec<DuruFile>>>,
 ) -> Result<Arc<Mutex<Vec<DuruFile>>>, DuruError> {
     match node {
-        Node::Root { children, path } => {
+        Node::Root { children, path: _ } => {
             if let Some(c) = children {
                 for child in c.iter_mut() {
                     if let Node::Root { .. } = child {
@@ -196,9 +193,9 @@ fn file_list_recurse(
             Ok(file_list)
         }
         Node::Dir {
-            name,
-            path,
-            size,
+            name: _,
+            path: _,
+            size: _,
             children,
         } => {
             if let Some(c) = children {
@@ -281,23 +278,6 @@ impl DuruList {
         }
     }
 
-    // pub fn print(&self, head: u32) {
-    //     let max_chars = self
-    //         .files
-    //         .iter()
-    //         .map(|f| f.name.chars().count())
-    //         .max()
-    //         .unwrap();
-
-    //     for file in self.files.iter() {
-    //         let indent = std::iter::repeat(" ")
-    //             .take(max_chars - file.name.chars().count() + 1)
-    //             .collect::<String>();
-    //         write!(f, "{}{}{}\n", file.name, indent, file.size)?
-    //     }
-    // }
-
-    // COntinue work on this
     fn to_indented_string(&self) -> Vec<IndentedString> {
         let max_chars = self
             .files
