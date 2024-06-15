@@ -13,7 +13,7 @@ struct Args {
     head: usize,
 
     #[arg(short, long, action)]
-    full: bool,
+    crop: bool,
 }
 fn main() {
     let args = Args::parse();
@@ -33,9 +33,9 @@ fn main() {
     duru.sort_by_size(SortOrder::Descending);
     let duru_list = duru.head(args.head);
 
-    if args.full {
-        duru_list.print_path_size();
-    } else {
+    if args.crop {
         duru_list.print_name_size();
+    } else {
+        duru_list.print_path_size();
     }
 }
